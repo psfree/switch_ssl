@@ -1,0 +1,11 @@
+--- a/Makefile	2018-12-21 07:20:49.000000000 -0500
++++ b/Makefile	2019-01-14 09:47:28.830431600 -0500
+@@ -21,7 +21,7 @@
+ 	$(MAKE) -C tests
+ 
+ ifndef WINDOWS
+-install: no_test
++install:
+ 	mkdir -p $(DESTDIR)/include/mbedtls
+ 	cp -rp include/mbedtls $(DESTDIR)/include
+ 

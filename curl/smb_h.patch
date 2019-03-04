@@ -1,0 +1,15 @@
+--- a/lib/smb.h	2019-01-23 12:40:49.064582000 -0500
++++ b/lib/smb.h	2019-01-23 12:43:16.113402600 -0500
+@@ -86,8 +86,12 @@
+ #define SMB_CAP_LARGE_FILES           0x08
+ #define SMB_GENERIC_WRITE             0x40000000
+ #define SMB_GENERIC_READ              0x80000000
++#define SMB_FILE_SUPERSEDE            0x00
+ #define SMB_FILE_SHARE_ALL            0x07
+ #define SMB_FILE_OPEN                 0x01
++#define SMB_FILE_CREATE               0x02
++#define SMB_FILE_OPEN_IF              0x03
++#define SMB_FILE_OVERWRITE            0x04
+ #define SMB_FILE_OVERWRITE_IF         0x05
+ 
+ #define SMB_ERR_NOACCESS              0x00050001

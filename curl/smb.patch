@@ -1,0 +1,30 @@
+--- a/lib/smb.c	2019-01-23 11:13:41.551877400 -0500
++++ b/lib/smb.c	2019-01-23 12:39:23.325705400 -0500
+@@ -517,7 +517,12 @@
+   msg.share_access = smb_swap32(SMB_FILE_SHARE_ALL);
+   if(conn->data->set.upload) {
+     msg.access = smb_swap32(SMB_GENERIC_READ | SMB_GENERIC_WRITE);
+-    msg.create_disposition = smb_swap32(SMB_FILE_OVERWRITE_IF);
++    if(conn->data->set.ftp_append) {
++        msg.create_disposition = smb_swap32(SMB_FILE_OPEN_IF);
++    }
++    else {
++        msg.create_disposition = smb_swap32(SMB_FILE_OVERWRITE_IF);
++    }
+   }
+   else {
+     msg.access = smb_swap32(SMB_GENERIC_READ);
+@@ -781,7 +786,12 @@
+     }
+     smb_m = (const struct smb_nt_create_response*) msg;
+     req->fid = smb_swap16(smb_m->fid);
+-    conn->data->req.offset = 0;
++    if(conn->data->set.set_resume_from > 0) {
++        conn->data->req.offset = conn->data->set.set_resume_from;
++    }
++    else {
++        conn->data->req.offset = 0;
++    }
+     if(conn->data->set.upload) {
+       conn->data->req.size = conn->data->state.infilesize;
+       Curl_pgrsSetUploadSize(conn->data, conn->data->req.size);

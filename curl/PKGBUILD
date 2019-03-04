@@ -1,0 +1,45 @@
+
+# Maintainer: WinterMute <davem@devkitpro.org>
+pkgname=switch-curl
+pkgver=7.59.0
+pkgrel=1
+pkgdesc='Deflate compression method library (for Nintendo Switch homebrew development)'
+arch=('any')
+url='http://www.zlib.net/'
+license=('zlib')
+options=(!strip libtool staticlibs)
+depends=('switch-zlib' 'switch-mbedtls')
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+source=("https://curl.haxx.se/download/curl-${pkgver}.tar.gz")
+groups=('switch-portlibs')
+
+sha256sums=( '099d9c32dc7b8958ca592597c9fabccdf4c08cfb7c114ff1afbbc4c6f13c9e9e'
+)
+
+build() {
+  cd curl-$pkgver
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+  
+  patch -p1 -i ../../smb.patch
+  patch -p1 -i ../../smb_h.patch
+
+  ./configure --prefix=$PORTLIBS_PREFIX --host=aarch64-none-elf \
+    --disable-shared --enable-static --disable-ipv6 --disable-unix-sockets \
+    --disable-manual --disable-ntlm-wb --disable-threaded-resolver --without-ssl --with-mbedtls
+
+  make -C lib
+  
+}
+
+package() {
+  cd curl-$pkgver
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  make DESTDIR="$pkgdir" -C lib install
+  make DESTDIR="$pkgdir" -C include install
+
+}

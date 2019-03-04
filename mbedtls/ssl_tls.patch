@@ -1,0 +1,56 @@
+--- a/library/ssl_tls.c	2018-12-21 07:20:49.000000000 -0500
++++ b/library/ssl_tls.c	2019-01-15 19:45:51.990240500 -0500
+@@ -43,6 +43,10 @@
+ #define mbedtls_free      free
+ #endif
+ 
++#include <netinet/tcp.h>
++#include <sys/socket.h>
++#include <unistd.h>
++#include <arpa/inet.h>
+ #include "mbedtls/debug.h"
+ #include "mbedtls/ssl.h"
+ #include "mbedtls/ssl_internal.h"
+@@ -8083,6 +8087,12 @@
+ 
+     MBEDTLS_SSL_DEBUG_MSG( 2, ( "=> handshake" ) );
+ 
++    if(ssl->p_bio != NULL)
++    {
++        int flag = 1;
++        setsockopt(*(int*)ssl->p_bio, IPPROTO_TCP, TCP_NODELAY, (char *) &flag, sizeof(int));
++    }
++
+     while( ssl->state != MBEDTLS_SSL_HANDSHAKE_OVER )
+     {
+         ret = mbedtls_ssl_handshake_step( ssl );
+@@ -8263,12 +8273,14 @@
+ {
+     int ret;
+     size_t n;
++    int flag = 1;
+ 
+     if( ssl == NULL || ssl->conf == NULL )
+         return( MBEDTLS_ERR_SSL_BAD_INPUT_DATA );
+ 
+     MBEDTLS_SSL_DEBUG_MSG( 2, ( "=> read" ) );
+ 
++    setsockopt(*(int*)ssl->p_bio, IPPROTO_TCP, TCP_NODELAY, (char *) &flag, sizeof(int));
+ #if defined(MBEDTLS_SSL_PROTO_DTLS)
+     if( ssl->conf->transport == MBEDTLS_SSL_TRANSPORT_DATAGRAM )
+     {
+@@ -8678,12 +8690,14 @@
+ int mbedtls_ssl_write( mbedtls_ssl_context *ssl, const unsigned char *buf, size_t len )
+ {
+     int ret;
++    int flag = 1;
+ 
+     MBEDTLS_SSL_DEBUG_MSG( 2, ( "=> write" ) );
+ 
+     if( ssl == NULL || ssl->conf == NULL )
+         return( MBEDTLS_ERR_SSL_BAD_INPUT_DATA );
+ 
++    setsockopt(*(int*)ssl->p_bio, IPPROTO_TCP, TCP_NODELAY, (char *) &flag, sizeof(int));
+ #if defined(MBEDTLS_SSL_RENEGOTIATION)
+     if( ( ret = ssl_check_ctr_renegotiate( ssl ) ) != 0 )
+     {

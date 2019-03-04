@@ -1,0 +1,53 @@
+
+pkgname=switch-mbedtls
+pkgver=2.16.0
+pkgrel=1
+pkgdesc='Deflate compression method library (for Nintendo Switch homebrew development)'
+arch=('any')
+url='http://www.zlib.net/'
+license=('zlib')
+options=(!strip libtool staticlibs)
+depends=('switch-zlib')
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+source=("https://tls.mbed.org/download/mbedtls-${pkgver}-apache.tgz")
+groups=('switch-portlibs')
+
+sha256sums=( 'e3dab56e9093c790b7d5e0f7eb19451010fe680649d25cf1dcca9d5441669ae2'
+)
+
+build() {
+  cd mbedtls-$pkgver
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+  
+  echo `pwd`
+  patch -p1 -i ../../makefile.patch
+  patch -p1 -i ../../net_sockets.patch
+  patch -p1 -i ../../ssl_tls.patch
+  
+  scripts/config.pl unset MBEDTLS_SSL_PROTO_TLS1_2
+  scripts/config.pl unset MBEDTLS_TIMING_C
+  scripts/config.pl unset MBEDTLS_ENTROPY_PLATFORM
+  scripts/config.pl unset MBEDTLS_SELF_TEST
+  scripts/config.pl set MBEDTLS_NO_PLATFORM_ENTROPY
+  scripts/config.pl set MBEDTLS_HAVE_TIME_DATE
+  scripts/config.pl unset MBEDTLS_PLATFORM_GMTIME_R_ALT
+  scripts/config.pl set MBEDTLS_ENTROPY_HARDWARE_ALT
+  scripts/config.pl set MBEDTLS_DEBUG_C
+#  scripts/config.pl set MBEDTLS_PLATFORM_PRINTF_MACRO PRINT_NULL(x) 
+
+  make CC=${TOOL_PREFIX}gcc CFLAGS="-D__SWITCH__ $CFLAGS -I/opt/devkitpro/libnx/include/" -C library
+  
+}
+
+package() {
+  cd mbedtls-$pkgver
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+
+  #make DESTDIR="$PORTLIBS_PREFIX" CC=${TOOL_PREFIX}gcc CFLAGS="-D__SWITCH__ $CFLAGS -I/opt/devkitpro/libnx/include/" install
+  make DESTDIR="$PORTLIBS_PREFIX" install
+}
